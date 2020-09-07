@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.lhy</groupId>
-    <artifactId>chapter-springboot-1</artifactId>
+    <artifactId>chapter1-6</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>chapter-springboot-1</name>
+    <name>chapter1-6</name>
     <description>Demo project for Spring Boot</description>
 
     <properties>
@@ -38,6 +38,14 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
     </dependencies>
 
