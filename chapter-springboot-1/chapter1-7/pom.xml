@@ -9,9 +9,9 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.lhy</groupId>
-    <artifactId>chapter-springboot-1</artifactId>
+    <artifactId>chapter1-7</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>chapter-springboot-1</name>
+    <name>chapter1-7</name>
     <description>Demo project for Spring Boot</description>
 
     <properties>
@@ -37,9 +37,13 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.21</version>
+        </dependency>
     </dependencies>
 
     <build>
