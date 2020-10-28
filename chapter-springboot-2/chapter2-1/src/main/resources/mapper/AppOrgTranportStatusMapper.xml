@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lhy.chapter21.mapper.AppOrgTranportStatusMapper">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, code, app_id, status_code, status_msg, status_time
+    </sql>
+    <select id="getAppOrgTransportTableInfo"
+            resultType="com.lhy.chapter21.vo.AppOrgTransportTableVO">
+        SELECT t.name       as systemSourceName,
+               t.status_code,
+               t.status_msg       as status_name,
+               min(t.status_time) as status_time,
+               sum(t.tdiff)       as abNormalDuration
+        FROM (
+                 SELECT t.CODE,
+                        t.name,
+                        t.status_time,
+                        t.status_code,
+                        t.status_msg,
+                        1800 AS tdiff,
+                        t.duration
+
+                 FROM (
+                          SELECT r1.CODE,
+                                 r1.name,
+                                 r1.status_time,
+                                 r1.status_code,
+                                 r1.status_msg,
+                                 CASE
+                                     WHEN TIMESTAMPDIFF(SECOND, r1.status_time, r2.status_time) <![CDATA[>=]]> 1500
+                                         AND TIMESTAMPDIFF(SECOND, r1.status_time, r2.status_time) <![CDATA[<=]]> 2000 THEN
+                                         (@ARCHIVE := @ARCHIVE)
+                                     ELSE (@ARCHIVE := @ARCHIVE + 1)
+                                     END AS duration
+                          FROM (
+                              SELECT (@rownum := @rownum + 1) AS rownum,
+                                     ai.CODE,
+                                     ai.name,
+                                     ai.status_time,
+                                     ai.status_code,
+                                     ai.status_msg
+                              FROM (
+                                       SELECT ai.CODE,
+                                              ai.name,
+                                              aots.status_time,
+                                              aots.status_code,
+                                              aots.status_msg
+                                       FROM app_info ai,
+                                            app_org_tranport_status aots
+                                       WHERE 1 = 1
+                                         AND aots.status_time <![CDATA[>=]]> #{startDate}
+                                         AND aots.status_time <![CDATA[<=]]> date_format(#{endDate}, '%Y-%m-%d 23:59:59')
+                                         AND aots.status_code = '1'
+                                         AND aots.app_id = ai.id
+                                       ORDER BY
+                                           aots.status_time DESC
+                                   ) ai,
+                                   (SELECT @rownum := 0) r
+                          ) r1
+                                   LEFT JOIN (
+                              SELECT (@INDEX := @INDEX + 1) AS rownum,
+                                     ai.CODE,
+                                     ai.name,
+                                     ai.status_time,
+                                     ai.status_code,
+                                     ai.status_msg
+                              FROM (
+                                       SELECT ai.CODE,
+                                              ai.name,
+                                              aots.status_time,
+                                              aots.status_code,
+                                              aots.status_msg
+                                       FROM app_info ai,
+                                            app_org_tranport_status aots
+                                       WHERE 1 = 1
+                                         AND aots.status_time <![CDATA[>=]]> #{startDate}
+                                         AND aots.status_time <![CDATA[<=]]> date_format(#{endDate}, '%Y-%m-%d 23:59:59')
+                                         AND aots.status_code = '1'
+                                         AND aots.app_id = ai.id
+                                       ORDER BY
+                                           aots.status_time DESC
+                                   ) ai,
+                                   (SELECT @INDEX := 1) r
+                          ) r2 ON r1.CODE = r2.CODE
+                              AND r1.rownum = r2.rownum
+                             , (SELECT @ARCHIVE := 0) r
+                      ) t
+             ) t
+        GROUP BY t.CODE,
+                 t.name,
+                 t.status_code,
+                 t.status_msg,
+                 t.duration
+        ORDER BY t.status_time DESC
+    </select>
+    <select id="findAppOrgTransportOnlineRateByDate"
+            resultType="com.lhy.chapter21.vo.AppOrgTranportStatisticVO">
+
+              SELECT
+                     ai.CODE  as                                                   appCode,
+                     date_format(aots.status_time, '%Y-%m-%d')                     statisticDate,
+                     count(CASE WHEN aots.status_code = '0' THEN 1 ELSE NULL END) normalNumber,
+                     count(1)                                                      totalNumber
+              FROM  app_org_tranport_status aots  left JOIN app_info ai
+                       ON aots.app_id = ai.id
+
+              WHERE   aots.status_time <![CDATA[>=]]> #{startDate}
+                AND aots.status_time <![CDATA[<=]]> #{endDate}
+                AND  ai.CODE IN ('test')
+              GROUP BY ai.CODE,
+                       date_format(aots.status_time, '%Y-%m-%d')
+
+    </select>
+</mapper>

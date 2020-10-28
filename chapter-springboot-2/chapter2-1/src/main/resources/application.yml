@@ -1,0 +1,42 @@
+server:
+  port: 9999
+spring:
+  shardingsphere:
+    datasource:
+      names: ds-master1
+      ds-master1:
+        type: com.zaxxer.hikari.HikariDataSource
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        jdbc-url: jdbc:mysql://localhost:3306/one_master?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=GMT
+        username: root
+        password: 123456
+    sharding:
+      tables:
+        ###### <alarm_record表> ######
+        app_org_tranport_status:
+          actualDataNodes: ds-master1.app_org_tranport_status
+          tableStrategy:
+            standard:
+              shardingColumn: status_time
+              preciseAlgorithmClassName: com.lhy.chapter21.config.shardingalgorithm.TimeMonthPreciseShardingTableAlgorithm
+              rangeAlgorithmClassName: com.lhy.chapter21.config.shardingalgorithm.TimeMonthRangeShardingTableAlgorithm
+      ####绑定表>>>alarm_record,alarm_record_handle_relat,alarm_record_handle多对多关系
+      ####例如:alarm_record的id和alarm_record_handle_relat的alarm_record_id是一样的值,alarm_record_handle_relat的alarm_record_handle_id和alarm_record_handle的id是一样的值
+      bindingTables: app_org_tranport_status
+      ####广播表>>>每个数据库都存在, 且数据都是一样的
+      broadcastTables: app_info
+    props:
+      sql.show: true
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    auto-mapping-behavior: full
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  mapper-locations: classpath*:mapper/**/*Mapper.xml
+  global-config:
+    # 逻辑删除配置
+    db-config:
+      # 删除前
+      logic-not-delete-value: 1
+      # 删除后
+      logic-delete-value: 0
